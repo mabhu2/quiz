@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8fb" />
+    <title>LearnOS Quiz Intelligence</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20260515-finish-submit" />
+  </head>
+  <body data-theme="light" data-density="comfortable">
+    <div class="app-frame">
+      <header class="topbar">
+        <button class="brand-button nav-link" type="button" data-page="home" aria-label="Home">
+          <span class="brand-glyph" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span class="brand-copy">
+            <strong>LearnOS</strong>
+            <small>Quiz Intelligence</small>
+          </span>
+        </button>
+
+        <nav class="main-nav" aria-label="Primary navigation">
+          <button class="nav-link is-active" type="button" data-page="home">Home</button>
+          <button class="nav-link" type="button" data-page="analytics">Analytics</button>
+          <button class="nav-link" type="button" data-page="history">History</button>
+          <button class="nav-link" type="button" data-page="settings">Settings</button>
+        </nav>
+
+        <div class="topbar-actions">
+          <span id="streakBadge" class="metric-pill">0 day streak</span>
+          <button id="quickThemeButton" class="icon-button" type="button" aria-label="Toggle theme">
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+
+      <main id="appRoot">
+        <section id="homePage" class="page is-active" data-page-panel="home">
+          <div class="hero-layout">
+            <section class="hero-copy" aria-labelledby="heroTitle">
+              <p class="eyebrow">Adaptive AI assessment</p>
+              <h1 id="heroTitle">Learn Anything. Instantly.</h1>
+              <p class="hero-subtitle">Generate AI-powered quizzes from any topic in seconds.</p>
+
+              <form id="quizForm" class="hero-composer">
+                <label class="input-shell" for="topicInput">
+                  <span>Topic</span>
+                  <input
+                    id="topicInput"
+                    name="topic"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Deep learning, cricket, product strategy..."
+                    required
+                  />
+                </label>
+
+                <div class="select-grid">
+                  <label>
+                    <span>Difficulty</span>
+                    <select id="difficultySelect" name="difficulty">
+                      <option value="mixed" selected>Mixed</option>
+                      <option value="easy">Easy</option>
+                      <option value="medium">Medium</option>
+                      <option value="hard">Hard</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Questions</span>
+                    <select id="countSelect" name="count">
+                      <option value="5" selected>5</option>
+                      <option value="10">10</option>
+                      <option value="15">15</option>
+                      <option value="20">20</option>
+                      <option value="30">30</option>
+                      <option value="50">50</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Mode</span>
+                    <select id="modeSelect" name="mode">
+                      <option value="practice" selected>Practice Mode</option>
+                      <option value="learning">Learning Mode</option>
+                      <option value="exam">Exam Mode</option>
+                    </select>
+                  </label>
+                </div>
+
+                <button id="generateButton" class="primary-button hero-cta" type="submit">
+                  <span class="button-loader" aria-hidden="true"></span>
+                  <span>Generate Quiz</span>
+                </button>
+              </form>
+            </section>
+
+            <aside class="personal-panel" aria-label="Learning snapshot">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Today</p>
+                  <h2 id="personalMessage">Ready for a new session</h2>
+                </div>
+                <span id="readinessScore">AI</span>
+              </div>
+              <div class="mini-chart" aria-hidden="true">
+                <span style="height: 38%"></span>
+                <span style="height: 64%"></span>
+                <span style="height: 44%"></span>
+                <span style="height: 76%"></span>
+                <span style="height: 58%"></span>
+                <span style="height: 84%"></span>
+              </div>
+              <div class="insight-grid">
+                <div>
+                  <strong id="totalQuizzes">0</strong>
+                  <span>Quizzes</span>
+                </div>
+                <div>
+                  <strong id="avgScore">0%</strong>
+                  <span>Average</span>
+                </div>
+                <div>
+                  <strong id="bestSkill">Concept</strong>
+                  <span>Best skill</span>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section id="loadingPage" class="page loading-page" data-page-panel="loading" aria-live="polite">
+          <div class="skeleton-shell">
+            <div class="skeleton-top">
+              <span></span>
+              <span></span>
+            </div>
+            <div class="skeleton-question"></div>
+            <div class="skeleton-options">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <p id="loadingText">Designing your assessment...</p>
+          </div>
+        </section>
+
+        <section id="quizPage" class="page quiz-page" data-page-panel="quiz">
+          <header class="quiz-topbar">
+            <button id="exitQuizButton" class="icon-text-button" type="button">Exit</button>
+            <div class="progress-wrap" aria-label="Quiz progress">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div class="quiz-meta-row">
+              <span id="questionCounter">1/5</span>
+              <span id="quizTimer">00:00</span>
+            </div>
+          </header>
+
+          <article class="question-stage">
+            <div class="question-kicker">
+              <span id="questionDifficulty">Mixed</span>
+              <span id="questionSkill">Concept</span>
+            </div>
+            <h2 id="questionText"></h2>
+            <div id="optionList" class="option-list"></div>
+            <div id="feedbackBox" class="feedback-box is-hidden"></div>
+            <footer class="quiz-actions">
+              <button id="prevButton" class="secondary-button" type="button">Back</button>
+              <button
+                id="finishQuizButton"
+                class="secondary-button finish-quiz-button"
+                type="button"
+                aria-label="Finish and submit quiz"
+              >
+                Finish
+              </button>
+              <button id="nextButton" class="primary-button" type="button">Next</button>
+            </footer>
+          </article>
+        </section>
+
+        <section id="resultsPage" class="page results-page" data-page-panel="results">
+          <div class="results-hero">
+            <div class="score-orbit" aria-label="Quiz score">
+              <svg viewBox="0 0 140 140" role="img">
+                <circle class="ring-track" cx="70" cy="70" r="58"></circle>
+                <circle id="scoreRing" class="ring-fill" cx="70" cy="70" r="58"></circle>
+              </svg>
+              <div>
+                <strong id="scorePercent">0%</strong>
+                <span id="masteryLevel">Mastery</span>
+              </div>
+            </div>
+            <div>
+              <p class="eyebrow">Performance intelligence</p>
+              <h2 id="scoreMessage">Good Progress</h2>
+              <p id="scoreLine" class="muted-line"></p>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <article>
+              <span>Accuracy</span>
+              <strong id="accuracyMetric">0%</strong>
+            </article>
+            <article>
+              <span>Time spent</span>
+              <strong id="timeMetric">00:00</strong>
+            </article>
+            <article>
+              <span>Correct</span>
+              <strong id="correctMetric">0</strong>
+            </article>
+            <article>
+              <span>Incorrect</span>
+              <strong id="incorrectMetric">0</strong>
+            </article>
+          </div>
+
+          <section class="analysis-grid" aria-label="Skill breakdown">
+            <div class="section-heading">
+              <p class="eyebrow">Skills</p>
+              <h3>Breakdown</h3>
+            </div>
+            <div id="skillCards" class="skill-cards"></div>
+          </section>
+
+          <section class="analysis-grid" aria-label="Recommendations">
+            <div class="section-heading">
+              <p class="eyebrow">AI recommendations</p>
+              <h3>Next topics</h3>
+            </div>
+            <div id="nextTopics" class="recommendation-list"></div>
+          </section>
+
+          <footer class="result-actions">
+            <button id="retryButton" class="secondary-button" type="button">Retry Quiz</button>
+            <button id="weakPracticeButton" class="secondary-button" type="button">Practice Weak Areas</button>
+            <button id="newQuizButton" class="primary-button" type="button">Generate New Quiz</button>
+          </footer>
+        </section>
+
+        <section id="analyticsPage" class="page analytics-page" data-page-panel="analytics">
+          <div class="dashboard-header">
+            <div>
+              <p class="eyebrow">Learning intelligence hub</p>
+              <h1>Analytics Dashboard</h1>
+            </div>
+            <button class="primary-button nav-link" type="button" data-page="home">New Quiz</button>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="dashboard-card overview-card">
+              <div class="section-heading">
+                <p class="eyebrow">Overview</p>
+                <h3>Learning Overview</h3>
+              </div>
+              <div class="overview-metrics">
+                <div><strong id="dashTotal">0</strong><span>Total quizzes</span></div>
+                <div><strong id="dashAverage">0%</strong><span>Average score</span></div>
+                <div><strong id="dashTrend">0%</strong><span>Trend</span></div>
+              </div>
+              <svg id="trendChart" class="trend-chart" viewBox="0 0 420 120" role="img"></svg>
+            </article>
+
+            <article class="dashboard-card">
+              <div class="section-heading">
+                <p class="eyebrow">Radar</p>
+                <h3>Skill Distribution</h3>
+              </div>
+              <svg id="radarChart" class="radar-chart" viewBox="0 0 260 260" role="img"></svg>
+            </article>
+
+            <article class="dashboard-card">
+              <div class="section-heading">
+                <p class="eyebrow">Topics</p>
+                <h3>Heatmap</h3>
+              </div>
+              <div id="topicHeatmap" class="topic-heatmap"></div>
+            </article>
+
+            <article class="dashboard-card">
+              <div class="section-heading">
+                <p class="eyebrow">Timeline</p>
+                <h3>Progress Timeline</h3>
+              </div>
+              <div id="timeline" class="timeline"></div>
+            </article>
+
+            <article class="dashboard-card recommendation-card">
+              <div class="section-heading">
+                <p class="eyebrow">AI Coach</p>
+                <h3>Recommended Focus</h3>
+              </div>
+              <div id="dashboardRecommendations" class="recommendation-list"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="historyPage" class="page history-page" data-page-panel="history">
+          <div class="dashboard-header">
+            <div>
+              <p class="eyebrow">Session archive</p>
+              <h1>History</h1>
+            </div>
+            <button id="clearHistoryButton" class="secondary-button" type="button">Clear History</button>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section id="settingsPage" class="page settings-page" data-page-panel="settings">
+          <div class="dashboard-header">
+            <div>
+              <p class="eyebrow">Personalization engine</p>
+              <h1>Settings</h1>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <article class="settings-card">
+              <h3>UI Settings</h3>
+              <label>
+                <span>Font size</span>
+                <input id="fontSizeSlider" type="range" min="92" max="112" value="100" />
+              </label>
+              <label>
+                <span>Font style</span>
+                <select id="fontStyleSelect">
+                  <option value="system" selected>System</option>
+                  <option value="rounded">Rounded</option>
+                  <option value="serif">Editorial</option>
+                </select>
+              </label>
+              <label>
+                <span>Density</span>
+                <select id="densitySelect">
+                  <option value="compact">Compact</option>
+                  <option value="comfortable" selected>Comfortable</option>
+                  <option value="spacious">Spacious</option>
+                </select>
+              </label>
+            </article>
+
+            <article class="settings-card">
+              <h3>Theme System</h3>
+              <div class="theme-grid" id="themeGrid">
+                <button type="button" data-theme="light" class="is-active">Light</button>
+                <button type="button" data-theme="dark">Dark</button>
+                <button type="button" data-theme="amoled">AMOLED</button>
+                <button type="button" data-theme="glass">Glass</button>
+                <button type="button" data-theme="gradient">Gradient</button>
+              </div>
+            </article>
+
+            <article class="settings-card">
+              <h3>Quiz Settings</h3>
+              <label>
+                <span>Default difficulty</span>
+                <select id="defaultDifficultySelect">
+                  <option value="mixed" selected>Mixed</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </label>
+              <label>
+                <span>Default questions</span>
+                <select id="defaultCountSelect">
+                  <option value="5" selected>5</option>
+                  <option value="10">10</option>
+                  <option value="15">15</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <label class="switch-row">
+                <input id="autoExplainToggle" type="checkbox" checked />
+                <span>Auto explanation</span>
+              </label>
+            </article>
+
+            <article class="settings-card">
+              <h3>Animation Settings</h3>
+              <label class="switch-row">
+                <input id="reduceMotionToggle" type="checkbox" />
+                <span>Reduce motion</span>
+              </label>
+              <label>
+                <span>Animation intensity</span>
+                <input id="motionIntensitySlider" type="range" min="0" max="100" value="70" />
+              </label>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="/static/app.js?v=20260515-finish-submit" defer></script>
+  </body>
+</html>
